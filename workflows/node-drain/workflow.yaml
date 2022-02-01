@@ -1,0 +1,184 @@
+kind: Workflow
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: custom-chaos-workflow-1642754380
+  namespace: litmus
+  creationTimestamp: null
+  labels:
+    cluster_id: 7c8a768c-842f-41fc-8d17-f8c489ee737f
+    subject: custom-chaos-workflow_litmus
+    workflow_id: 9427d593-d9dd-4f4d-9a56-d23e3387dfbd
+    workflows.argoproj.io/controller-instanceid: 7c8a768c-842f-41fc-8d17-f8c489ee737f
+spec:
+  templates:
+    - name: custom-chaos
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      steps:
+        - - name: install-chaos-experiments
+            template: install-chaos-experiments
+            arguments: {}
+        - - name: node-drain
+            template: node-drain
+            arguments: {}
+    - name: install-chaos-experiments
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: node-drain
+            path: /tmp/node-drain.yaml
+            raw:
+              data: |
+                apiVersion: litmuschaos.io/v1alpha1
+                description:
+                  message: |
+                    Drain the node where application pod is scheduled
+                kind: ChaosExperiment
+                metadata:
+                  name: node-drain
+                  labels:
+                    name: node-drain
+                    app.kubernetes.io/part-of: litmus
+                    app.kubernetes.io/component: chaosexperiment
+                    app.kubernetes.io/version: 2.2.0
+                spec:
+                  definition:
+                    scope: Cluster
+                    permissions:
+                      - apiGroups:
+                          - ""
+                          - batch
+                          - litmuschaos.io
+                          - apps
+                        resources:
+                          - jobs
+                          - pods
+                          - events
+                          - pods/log
+                          - pods/exec
+                          - daemonsets
+                          - pods/eviction
+                          - chaosengines
+                          - chaosexperiments
+                          - chaosresults
+                        verbs:
+                          - create
+                          - list
+                          - get
+                          - patch
+                          - update
+                          - delete
+                          - deletecollection
+                      - apiGroups:
+                          - ""
+                        resources:
+                          - nodes
+                        verbs:
+                          - get
+                          - list
+                          - patch
+                    image: litmuschaos/go-runner:2.2.0
+                    imagePullPolicy: IfNotPresent
+                    args:
+                      - -c
+                      - ./experiments -name node-drain
+                    command:
+                      - /bin/bash
+                    env:
+                      - name: TARGET_NODE
+                        value: ""
+                      - name: NODE_LABEL
+                        value: ""
+                      - name: TOTAL_CHAOS_DURATION
+                        value: "60"
+                      - name: LIB
+                        value: litmus
+                      - name: RAMP_TIME
+                        value: ""
+                    labels:
+                      name: node-drain
+                      app.kubernetes.io/part-of: litmus
+                      app.kubernetes.io/component: experiment-job
+                      app.kubernetes.io/version: 2.2.0
+      outputs: {}
+      metadata: {}
+      container:
+        name: ""
+        image: litmuschaos/k8s:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - -c
+        args:
+          - kubectl apply -f /tmp/node-drain.yaml -n
+            {{workflow.parameters.adminModeNamespace}} |  sleep 30
+        resources: {}
+    - name: node-drain
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: node-drain
+            path: /tmp/chaosengine-node-drain.yaml
+            raw:
+              data: >
+                apiVersion: litmuschaos.io/v1alpha1
+
+                kind: ChaosEngine
+
+                metadata:
+                  namespace: "{{workflow.parameters.adminModeNamespace}}"
+                  generateName: node-drain
+                  labels:
+                    instance_id: 08d23762-ebe1-4d8d-8635-15552b962cee
+                    context: node-drain_litmus
+                    workflow_name: custom-chaos-workflow-1642754380
+                spec:
+                  components:
+                    runner:
+                      nodeSelector:
+                        kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+                  jobCleanUpPolicy: retain
+                  engineState: active
+                  auxiliaryAppInfo: ""
+                  chaosServiceAccount: litmus-admin
+                  experiments:
+                    - name: node-drain
+                      spec:
+                        components:
+                          env:
+                            - name: TOTAL_CHAOS_DURATION
+                              value: "60"
+                            - name: TARGET_NODE
+                              value: gke-vedant-cle-cluster-default-pool-f7092671-qv2x
+                          nodeSelector:
+                            kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+                        probe: []
+                  annotationCheck: "false"
+      outputs: {}
+      metadata:
+        labels:
+          weight: "10"
+      container:
+        name: ""
+        image: litmuschaos/litmus-checker:latest
+        imagePullPolicy: IfNotPresent
+        args:
+          - -file=/tmp/chaosengine-node-drain.yaml
+          - -saveName=/tmp/engine-name
+        resources: {}
+  entrypoint: custom-chaos
+  arguments:
+    parameters:
+      - name: adminModeNamespace
+        value: litmus
+  serviceAccountName: argo-chaos
+  nodeSelector:
+    kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+  securityContext:
+    runAsUser: 1000
+    runAsNonRoot: true
+status:
+  ? startedAt
+  ? finishedAt

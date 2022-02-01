@@ -1,0 +1,225 @@
+kind: Workflow
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: custom-workflow-1642405078
+  namespace: litmus
+  creationTimestamp: null
+  labels:
+    cluster_id: ad07ec47-c276-49d7-82f0-34ea38157a45
+    subject: custom-workflow-1642405078_litmus
+    workflow_id: 0de05297-9e86-4c7b-bce4-8e37dab8cf91
+    workflows.argoproj.io/controller-instanceid: ad07ec47-c276-49d7-82f0-34ea38157a45
+spec:
+  templates:
+    - name: custom-chaos
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      steps:
+        - - name: install-chaos-experiments
+            template: install-chaos-experiments
+            arguments: {}
+        - - name: pod-network-latency
+            template: pod-network-latency
+            arguments: {}
+    - name: install-chaos-experiments
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: pod-network-latency
+            path: /tmp/pod-network-latency.yaml
+            raw:
+              data: >
+                apiVersion: litmuschaos.io/v1alpha1
+
+                description:
+                  message: |
+                    Injects network latency on pods belonging to an app deployment
+                kind: ChaosExperiment
+
+                metadata:
+                  name: pod-network-latency
+                  labels:
+                    name: pod-network-latency
+                    app.kubernetes.io/part-of: litmus
+                    app.kubernetes.io/component: chaosexperiment
+                    app.kubernetes.io/version: 2.2.0
+                spec:
+                  definition:
+                    scope: Namespaced
+                    permissions:
+                      - apiGroups:
+                          - ""
+                          - batch
+                          - apps
+                          - apps.openshift.io
+                          - argoproj.io
+                          - litmuschaos.io
+                        resources:
+                          - jobs
+                          - pods
+                          - pods/log
+                          - replicationcontrollers
+                          - deployments
+                          - statefulsets
+                          - daemonsets
+                          - replicasets
+                          - deploymentconfigs
+                          - rollouts
+                          - pods/exec
+                          - events
+                          - chaosengines
+                          - chaosexperiments
+                          - chaosresults
+                        verbs:
+                          - create
+                          - list
+                          - get
+                          - patch
+                          - update
+                          - delete
+                          - deletecollection
+                    image: litmuschaos/go-runner:2.2.0
+                    imagePullPolicy: IfNotPresent
+                    args:
+                      - -c
+                      - ./experiments -name pod-network-latency
+                    command:
+                      - /bin/bash
+                    env:
+                      - name: TARGET_CONTAINER
+                        value: ""
+                      - name: NETWORK_INTERFACE
+                        value: eth0
+                      - name: LIB_IMAGE
+                        value: litmuschaos/go-runner:2.2.0
+                      - name: TC_IMAGE
+                        value: gaiadocker/iproute2
+                      - name: NETWORK_LATENCY
+                        value: "2000"
+                      - name: TOTAL_CHAOS_DURATION
+                        value: "60"
+                      - name: RAMP_TIME
+                        value: ""
+                      - name: LIB
+                        value: litmus
+                      - name: PODS_AFFECTED_PERC
+                        value: ""
+                      - name: TARGET_PODS
+                        value: ""
+                      - name: CONTAINER_RUNTIME
+                        value: docker
+                      - name: DESTINATION_IPS
+                        value: ""
+                      - name: DESTINATION_HOSTS
+                        value: ""
+                      - name: SOCKET_PATH
+                        value: /var/run/docker.sock
+                      - name: SEQUENCE
+                        value: parallel
+                    labels:
+                      name: pod-network-latency
+                      app.kubernetes.io/part-of: litmus
+                      app.kubernetes.io/component: experiment-job
+                      app.kubernetes.io/runtime-api-usage: "true"
+                      app.kubernetes.io/version: latest
+      outputs: {}
+      metadata: {}
+      container:
+        name: ""
+        image: litmuschaos/k8s:latest
+        command:
+          - sh
+          - -c
+        args:
+          - kubectl apply -f /tmp/pod-delete.yaml -n
+            {{workflow.parameters.adminModeNamespace}} | kubectl apply -f
+            /tmp/pod-network-latency.yaml -n
+            {{workflow.parameters.adminModeNamespace}} |  sleep 30
+        resources: {}
+        imagePullPolicy: IfNotPresent
+    - name: pod-network-latency
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: pod-network-latency
+            path: /tmp/chaosengine-pod-network-latency.yaml
+            raw:
+              data: |
+                apiVersion: litmuschaos.io/v1alpha1
+                kind: ChaosEngine
+                metadata:
+                  namespace: "{{workflow.parameters.adminModeNamespace}}"
+                  generateName: pod-network-latency
+                  labels:
+                    instance_id: 0642e22b-6e0a-4bc7-bf05-878c03f106ed
+                    context: pod-network-latency_litmus
+                    workflow_name: custom-workflow-1642405078
+                spec:
+                  jobCleanUpPolicy: retain
+                  engineState: active
+                  appinfo:
+                    appns: default
+                    applabel: app=nginx
+                    appkind: deployment
+                  chaosServiceAccount: litmus-admin
+                  experiments:
+                    - name: pod-network-latency
+                      spec:
+                        components:
+                          env:
+                            - name: TOTAL_CHAOS_DURATION
+                              value: "60"
+                            - name: NETWORK_LATENCY
+                              value: "2000"
+                            - name: CONTAINER_RUNTIME
+                              value: docker
+                            - name: SOCKET_PATH
+                              value: /var/run/docker.sock
+                            - name: PODS_AFFECTED_PERC
+                              value: ""
+                        probe: []
+                  annotationCheck: "false"
+      outputs: {}
+      metadata:
+        labels:
+          weight: "10"
+      container:
+        name: ""
+        image: litmuschaos/litmus-checker:latest
+        args:
+          - -file=/tmp/chaosengine-pod-network-latency.yaml
+          - -saveName=/tmp/engine-name
+        resources: {}
+        imagePullPolicy: IfNotPresent
+    - name: revert-chaos
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      container:
+        name: ""
+        image: litmuschaos/k8s:latest
+        command:
+          - sh
+          - -c
+        args:
+          - "kubectl delete chaosengine -l 'instance_id in
+            (0642e22b-6e0a-4bc7-bf05-878c03f106ed, )' -n
+            {{workflow.parameters.adminModeNamespace}} "
+        resources: {}
+  entrypoint: custom-chaos
+  arguments:
+    parameters:
+      - name: adminModeNamespace
+        value: litmus
+  serviceAccountName: argo-chaos
+  podGC:
+    strategy: OnWorkflowCompletion
+  securityContext:
+    runAsUser: 1000
+    runAsNonRoot: true
+status:
+  ? startedAt
+  ? finishedAt

@@ -1,0 +1,203 @@
+kind: Workflow
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: pod-network-corruption-workflow
+  namespace: litmus
+  creationTimestamp: null
+  labels:
+    cluster_id: 4d388b87-6ec4-442c-bb2d-58f968f480f3
+    subject: custom-chaos-workflow_litmus
+    workflow_id: 719c3cee-18a5-49f8-b535-1f5c0770da10
+    workflows.argoproj.io/controller-instanceid: 4d388b87-6ec4-442c-bb2d-58f968f480f3
+spec:
+  templates:
+    - name: custom-chaos
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      steps:
+        - - name: install-chaos-experiments
+            template: install-chaos-experiments
+            arguments: {}
+        - - name: pod-network-corruption
+            template: pod-network-corruption
+            arguments: {}
+    - name: install-chaos-experiments
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: pod-network-corruption
+            path: /tmp/pod-network-corruption.yaml
+            raw:
+              data: |
+                apiVersion: litmuschaos.io/v1alpha1
+                description:
+                  message: |
+                    Inject network packet corruption into application pod
+                kind: ChaosExperiment
+                metadata:
+                  name: pod-network-corruption
+                  labels:
+                    name: pod-network-corruption
+                    app.kubernetes.io/part-of: litmus
+                    app.kubernetes.io/component: chaosexperiment
+                    app.kubernetes.io/version: 2.2.0
+                spec:
+                  definition:
+                    scope: Namespaced
+                    permissions:
+                      - apiGroups:
+                          - ""
+                          - batch
+                          - apps
+                          - apps.openshift.io
+                          - argoproj.io
+                          - litmuschaos.io
+                        resources:
+                          - jobs
+                          - pods
+                          - pods/log
+                          - replicationcontrollers
+                          - deployments
+                          - statefulsets
+                          - daemonsets
+                          - replicasets
+                          - deploymentconfigs
+                          - rollouts
+                          - pods/exec
+                          - events
+                          - chaosengines
+                          - chaosexperiments
+                          - chaosresults
+                        verbs:
+                          - create
+                          - delete
+                          - list
+                          - patch
+                          - update
+                          - get
+                          - deletecollection
+                    image: litmuschaos/go-runner:2.2.0
+                    imagePullPolicy: IfNotPresent
+                    args:
+                      - -c
+                      - ./experiments -name pod-network-corruption
+                    command:
+                      - /bin/bash
+                    env:
+                      - name: TARGET_CONTAINER
+                        value: ""
+                      - name: LIB_IMAGE
+                        value: litmuschaos/go-runner:2.2.0
+                      - name: NETWORK_INTERFACE
+                        value: eth0
+                      - name: TC_IMAGE
+                        value: gaiadocker/iproute2
+                      - name: NETWORK_PACKET_CORRUPTION_PERCENTAGE
+                        value: "100"
+                      - name: TOTAL_CHAOS_DURATION
+                        value: "60"
+                      - name: RAMP_TIME
+                        value: ""
+                      - name: LIB
+                        value: litmus
+                      - name: PODS_AFFECTED_PERC
+                        value: ""
+                      - name: TARGET_PODS
+                        value: ""
+                      - name: CONTAINER_RUNTIME
+                        value: docker
+                      - name: DESTINATION_IPS
+                        value: ""
+                      - name: DESTINATION_HOSTS
+                        value: ""
+                      - name: SOCKET_PATH
+                        value: /var/run/docker.sock
+                      - name: SEQUENCE
+                        value: parallel
+                    labels:
+                      name: pod-network-corruption
+                      app.kubernetes.io/part-of: litmus
+                      app.kubernetes.io/component: experiment-job
+                      app.kubernetes.io/runtime-api-usage: "true"
+                      app.kubernetes.io/version: latest
+      outputs: {}
+      metadata: {}
+      container:
+        name: ""
+        image: litmuschaos/k8s:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - -c
+        args:
+          - kubectl apply -f /tmp/pod-network-corruption.yaml -n
+            {{workflow.parameters.adminModeNamespace}} |  sleep 30
+        resources: {}
+    - name: pod-network-corruption
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: pod-network-corruption
+            path: /tmp/chaosengine-pod-network-corruption.yaml
+            raw:
+              data: |
+                apiVersion: litmuschaos.io/v1alpha1
+                kind: ChaosEngine
+                metadata:
+                  namespace: "{{workflow.parameters.adminModeNamespace}}"
+                  generateName: pod-network-corruption
+                  labels:
+                    instance_id: 38af7fc4-7b69-4e4e-ac52-6dcf14601458
+                    context: pod-network-corruption_litmus
+                    workflow_name: custom-chaos-workflow-1642492315
+                spec:
+                  jobCleanUpPolicy: retain
+                  engineState: active
+                  appinfo:
+                    appns: default
+                    applabel: app=nginx
+                    appkind: deployment
+                  chaosServiceAccount: litmus-admin
+                  experiments:
+                    - name: pod-network-corruption
+                      spec:
+                        components:
+                          env:
+                            - name: TOTAL_CHAOS_DURATION
+                              value: "60"
+                            - name: CONTAINER_RUNTIME
+                              value: docker
+                            - name: SOCKET_PATH
+                              value: /var/run/docker.sock
+                            - name: NETWORK_PACKET_CORRUPTION_PERCENTAGE
+                              value: "40"
+                            - name: PODS_AFFECTED_PERC
+                              value: ""
+                        probe: []
+                  annotationCheck: "false"
+      outputs: {}
+      metadata:
+        labels:
+          weight: "10"
+      container:
+        name: ""
+        image: litmuschaos/litmus-checker:latest
+        imagePullPolicy: IfNotPresent
+        args:
+          - -file=/tmp/chaosengine-pod-network-corruption.yaml
+          - -saveName=/tmp/engine-name
+        resources: {}
+  entrypoint: custom-chaos
+  arguments:
+    parameters:
+      - name: adminModeNamespace
+        value: litmus
+  serviceAccountName: argo-chaos
+  securityContext:
+    runAsUser: 1000
+    runAsNonRoot: true
+status:
+  ? startedAt
+  ? finishedAt

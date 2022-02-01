@@ -1,0 +1,26 @@
+apiVersion: litmuchaos.io/v1alpha1
+kind: ChartServiceVersion
+metadata:
+  name: pod-network-loss
+  version: 0.1.0
+  annotations:
+    categories: pod-network-loss
+    chartDescription: 
+spec:
+  displayName: pod-network-loss
+  categoryDescription: 
+  experiments:
+    - pod-network-loss
+  keywords: []
+  platforms: []
+  maintainers: []
+  provider:
+    name: ChaosNative
+  links:
+    - name: Kubernetes Slack
+      url: https://slack.kubernetes.io/
+    - name: Documentation
+      url: https://docs.litmuschaos.io/docs/chaoshub/#generic-chaos
+  icon:
+    - url: https://raw.githubusercontent.com/litmuschaos/chaos-charts/master/charts/generic/icons/generic.png
+      mediatype: image/png

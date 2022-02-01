@@ -1,0 +1,192 @@
+kind: Workflow
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: custom-chaos-workflow-1642754797
+  namespace: litmus
+  creationTimestamp: null
+  labels:
+    cluster_id: 7c8a768c-842f-41fc-8d17-f8c489ee737f
+    subject: custom-chaos-workflow_litmus
+    workflow_id: fa494b1c-4223-4409-9aa1-08f35e16d41c
+    workflows.argoproj.io/controller-instanceid: 7c8a768c-842f-41fc-8d17-f8c489ee737f
+spec:
+  templates:
+    - name: custom-chaos
+      arguments: {}
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      steps:
+        - - name: install-chaos-experiments
+            template: install-chaos-experiments
+            arguments: {}
+        - - name: node-cpu-hog
+            template: node-cpu-hog
+            arguments: {}
+    - name: install-chaos-experiments
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: node-cpu-hog
+            path: /tmp/node-cpu-hog.yaml
+            raw:
+              data: |
+                apiVersion: litmuschaos.io/v1alpha1
+                description:
+                  message: |
+                    Give a cpu spike on a node belonging to a deployment
+                kind: ChaosExperiment
+                metadata:
+                  name: node-cpu-hog
+                  labels:
+                    name: node-cpu-hog
+                    app.kubernetes.io/part-of: litmus
+                    app.kubernetes.io/component: chaosexperiment
+                    app.kubernetes.io/version: 2.2.0
+                spec:
+                  definition:
+                    scope: Cluster
+                    permissions:
+                      - apiGroups:
+                          - ""
+                          - batch
+                          - litmuschaos.io
+                        resources:
+                          - jobs
+                          - pods
+                          - pods/log
+                          - pods/exec
+                          - events
+                          - chaosengines
+                          - chaosexperiments
+                          - chaosresults
+                        verbs:
+                          - create
+                          - list
+                          - get
+                          - patch
+                          - update
+                          - delete
+                          - deletecollection
+                      - apiGroups:
+                          - ""
+                        resources:
+                          - nodes
+                        verbs:
+                          - get
+                          - list
+                    image: litmuschaos/go-runner:2.2.0
+                    imagePullPolicy: IfNotPresent
+                    args:
+                      - -c
+                      - ./experiments -name node-cpu-hog
+                    command:
+                      - /bin/bash
+                    env:
+                      - name: TOTAL_CHAOS_DURATION
+                        value: "60"
+                      - name: RAMP_TIME
+                        value: ""
+                      - name: NODE_CPU_CORE
+                        value: ""
+                      - name: TARGET_NODES
+                        value: ""
+                      - name: NODE_LABEL
+                        value: ""
+                      - name: LIB
+                        value: litmus
+                      - name: LIB_IMAGE
+                        value: litmuschaos/go-runner:2.2.0
+                      - name: NODES_AFFECTED_PERC
+                        value: ""
+                      - name: SEQUENCE
+                        value: parallel
+                    labels:
+                      name: node-cpu-hog
+                      app.kubernetes.io/part-of: litmus
+                      app.kubernetes.io/component: experiment-job
+                      app.kubernetes.io/version: 2.2.0
+      outputs: {}
+      metadata: {}
+      container:
+        name: ""
+        image: litmuschaos/k8s:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - -c
+        args:
+          - kubectl apply -f /tmp/node-cpu-hog.yaml -n
+            {{workflow.parameters.adminModeNamespace}} |  sleep 30
+        resources: {}
+    - name: node-cpu-hog
+      arguments: {}
+      inputs:
+        artifacts:
+          - name: node-cpu-hog
+            path: /tmp/chaosengine-node-cpu-hog.yaml
+            raw:
+              data: >
+                apiVersion: litmuschaos.io/v1alpha1
+
+                kind: ChaosEngine
+
+                metadata:
+                  namespace: "{{workflow.parameters.adminModeNamespace}}"
+                  generateName: node-cpu-hog
+                  labels:
+                    instance_id: a275e9cf-ff3e-42ac-90ef-998c6c5414a1
+                    context: node-cpu-hog_litmus
+                    workflow_name: custom-chaos-workflow-1642754797
+                spec:
+                  components:
+                    runner:
+                      nodeSelector:
+                        kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+                  jobCleanUpPolicy: retain
+                  engineState: active
+                  auxiliaryAppInfo: ""
+                  chaosServiceAccount: litmus-admin
+                  experiments:
+                    - name: node-cpu-hog
+                      spec:
+                        components:
+                          env:
+                            - name: TOTAL_CHAOS_DURATION
+                              value: "60"
+                            - name: NODE_CPU_CORE
+                              value: "1"
+                            - name: NODES_AFFECTED_PERC
+                              value: ""
+                            - name: TARGET_NODES
+                              value: gke-vedant-cle-cluster-default-pool-f7092671-qv2x
+                          nodeSelector:
+                            kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+                        probe: []
+                  annotationCheck: "false"
+      outputs: {}
+      metadata:
+        labels:
+          weight: "10"
+      container:
+        name: ""
+        image: litmuschaos/litmus-checker:latest
+        imagePullPolicy: IfNotPresent
+        args:
+          - -file=/tmp/chaosengine-node-cpu-hog.yaml
+          - -saveName=/tmp/engine-name
+        resources: {}
+  entrypoint: custom-chaos
+  arguments:
+    parameters:
+      - name: adminModeNamespace
+        value: litmus
+  serviceAccountName: argo-chaos
+  nodeSelector:
+    kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+  securityContext:
+    runAsUser: 1000
+    runAsNonRoot: true
+status:
+  ? startedAt
+  ? finishedAt
