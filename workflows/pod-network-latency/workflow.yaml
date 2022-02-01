@@ -209,7 +209,7 @@ spec:
             (0642e22b-6e0a-4bc7-bf05-878c03f106ed, )' -n
             {{workflow.parameters.adminModeNamespace}} "
         resources: {}
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace

@@ -168,7 +168,7 @@ spec:
           - -file=/tmp/chaosengine-node-drain.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace

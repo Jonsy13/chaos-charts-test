@@ -191,7 +191,7 @@ spec:
           - -file=/tmp/chaosengine-pod-network-loss.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace

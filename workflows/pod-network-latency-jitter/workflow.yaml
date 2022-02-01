@@ -262,7 +262,7 @@ spec:
           - -file=/tmp/chaosengine-pod-network-latency.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace

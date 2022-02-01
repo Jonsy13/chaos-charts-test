@@ -10,7 +10,7 @@ spec:
     parameters:
       - name: adminModeNamespace
         value: litmus
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000

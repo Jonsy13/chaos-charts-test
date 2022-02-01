@@ -185,7 +185,7 @@ spec:
           - -file=/tmp/chaosengine-container-kill.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace

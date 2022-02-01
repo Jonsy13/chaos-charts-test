@@ -183,7 +183,7 @@ spec:
           - -saveName=/tmp/engine-name
         resources: {}
         imagePullPolicy: IfNotPresent
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace

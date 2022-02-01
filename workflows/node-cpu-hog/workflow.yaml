@@ -176,7 +176,7 @@ spec:
           - -file=/tmp/chaosengine-node-cpu-hog.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrypoint: custom-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace
