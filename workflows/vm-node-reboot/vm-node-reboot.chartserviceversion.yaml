@@ -1,16 +1,16 @@
 apiVersion: litmuchaos.io/v1alpha1
 kind: ChartServiceVersion
 metadata:
-  name: container-kill
+  name: vm-node-reboot
   version: 0.1.0
   annotations:
-    categories: container-kill
+    categories: vm-node-reboot
     chartDescription: 
 spec:
-  displayName: container-kill
+  displayName: vm-node-reboot
   categoryDescription: 
   experiments:
-    - container-kill
+    - vm-node-reboot
   keywords: []
   platforms: []
   maintainers: []

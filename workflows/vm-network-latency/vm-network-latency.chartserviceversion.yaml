@@ -1,16 +1,16 @@
 apiVersion: litmuchaos.io/v1alpha1
 kind: ChartServiceVersion
 metadata:
-  name: container-kill
+  name: vm-network-latency
   version: 0.1.0
   annotations:
-    categories: container-kill
+    categories: vm-network-latency
     chartDescription: 
 spec:
-  displayName: container-kill
+  displayName: vm-network-latency
   categoryDescription: 
   experiments:
-    - container-kill
+    - vm-network-latency
   keywords: []
   platforms: []
   maintainers: []

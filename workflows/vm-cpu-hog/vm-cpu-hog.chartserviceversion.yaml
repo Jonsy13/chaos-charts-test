@@ -1,16 +1,16 @@
 apiVersion: litmuchaos.io/v1alpha1
 kind: ChartServiceVersion
 metadata:
-  name: container-kill
+  name: vm-cpu-hog
   version: 0.1.0
   annotations:
-    categories: container-kill
+    categories: vm-cpu-hog
     chartDescription: 
 spec:
-  displayName: container-kill
+  displayName: vm-cpu-hog
   categoryDescription: 
   experiments:
-    - container-kill
+    - vm-cpu-hog
   keywords: []
   platforms: []
   maintainers: []

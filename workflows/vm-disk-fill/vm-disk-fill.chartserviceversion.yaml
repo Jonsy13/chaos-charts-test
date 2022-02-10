@@ -1,16 +1,16 @@
 apiVersion: litmuchaos.io/v1alpha1
 kind: ChartServiceVersion
 metadata:
-  name: container-kill
+  name: vm-disk-fill
   version: 0.1.0
   annotations:
-    categories: container-kill
+    categories: vm-disk-fill
     chartDescription: 
 spec:
-  displayName: container-kill
+  displayName: vm-disk-fill
   categoryDescription: 
   experiments:
-    - container-kill
+    - vm-disk-fill
   keywords: []
   platforms: []
   maintainers: []
