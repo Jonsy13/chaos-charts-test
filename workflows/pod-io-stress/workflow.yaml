@@ -11,7 +11,7 @@ metadata:
     workflows.argoproj.io/controller-instanceid: 5457b1d4-6df6-45ce-88e0-01e13e6379b9
 spec:
   templates:
-    - name: custom-chaos
+    - name: argowf-chaos
       arguments: {}
       inputs: {}
       outputs: {}

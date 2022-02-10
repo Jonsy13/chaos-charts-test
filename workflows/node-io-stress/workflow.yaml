@@ -1,7 +1,7 @@
 kind: Workflow
 apiVersion: argoproj.io/v1alpha1
 metadata:
-  name: pod-io-stress
+  name: node-io-stress
   namespace: litmus
   creationTimestamp: null
   labels:
@@ -11,7 +11,7 @@ metadata:
     workflows.argoproj.io/controller-instanceid: 5457b1d4-6df6-45ce-88e0-01e13e6379b9
 spec:
   templates:
-    - name: custom-chaos
+    - name: argowf-chaos
       arguments: {}
       inputs: {}
       outputs: {}
