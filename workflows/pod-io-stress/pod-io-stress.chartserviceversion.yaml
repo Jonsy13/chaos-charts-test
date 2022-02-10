@@ -1,16 +1,16 @@
 apiVersion: litmuchaos.io/v1alpha1
 kind: ChartServiceVersion
 metadata:
-  name: container-kill
+  name: pod-io-stress
   version: 0.1.0
   annotations:
-    categories: container-kill
+    categories: pod-io-stress
     chartDescription: 
 spec:
-  displayName: container-kill
+  displayName: pod-io-stress
   categoryDescription: 
   experiments:
-    - container-kill
+    - pod-io-stress
   keywords: []
   platforms: []
   maintainers: []
