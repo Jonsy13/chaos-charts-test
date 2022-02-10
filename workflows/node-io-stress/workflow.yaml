@@ -182,7 +182,7 @@ spec:
           - -file=/tmp/chaosengine-node-io-stress.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrypoint: custom-chaos
+  entrpoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace

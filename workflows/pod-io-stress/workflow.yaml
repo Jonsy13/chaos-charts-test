@@ -181,7 +181,7 @@ spec:
           - -file=/tmp/chaosengine-pod-io-stress.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrypoint: custom-chaos
+  entrpoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace
