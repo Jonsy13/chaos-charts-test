@@ -146,7 +146,7 @@ spec:
                   components:
                     runner:
                       nodeSelector:
-                        kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+                        kubernetes.io/hostname: ""
                   jobCleanUpPolicy: retain
                   engineState: active
                   auxiliaryAppInfo: ""
@@ -163,9 +163,9 @@ spec:
                             - name: NODES_AFFECTED_PERC
                               value: ""
                             - name: TARGET_NODES
-                              value: gke-vedant-cle-cluster-default-pool-f7092671-qv2x
+                              value: ""
                           nodeSelector:
-                            kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+                            kubernetes.io/hostname: ""
                         probe: []
                   annotationCheck: "false"
       outputs: {}
@@ -187,7 +187,7 @@ spec:
         value: litmus
   serviceAccountName: argo-chaos
   nodeSelector:
-    kubernetes.io/hostname: gke-vedant-cle-cluster-default-pool-f7092671-4xck
+    kubernetes.io/hostname: ""
   securityContext:
     runAsUser: 1000
     runAsNonRoot: true
