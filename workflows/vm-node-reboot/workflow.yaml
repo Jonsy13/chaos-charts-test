@@ -216,7 +216,7 @@ spec:
           - -file=/tmp/chaosengine-run-command-chaos.yaml
           - -saveName=/tmp/engine-name
         resources: {}
-  entrpoint: argowf-chaos
+  entrypoint: argowf-chaos
   arguments:
     parameters:
       - name: adminModeNamespace
